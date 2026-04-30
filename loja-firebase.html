@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASA GAMA - Curated Living</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f8f4ef;
+    --moss: #6b6844;
+    --moss-dark: #55533a;
+    --moss-light: #8a8760;
+    --text: #2a2a2a;
+    --text-muted: #888880;
+    --white: #ffffff;
+    --border: #e0dbd4;
+    --available: #6b6844;
+    --unavailable: #c5bfb8;
+    --gift-accent: #aa6748;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-weight: 300;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+  }
+  .logo-main {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--moss);
+  }
+  .logo-dot { color: var(--moss); }
+  .logo-sub {
+    font-size: 8px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+  .cart-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--moss);
+    color: var(--white);
+    border: none;
+    padding: 10px 18px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .cart-btn:hover { background: var(--moss-dark); }
+  .cart-count {
+    background: var(--white);
+    color: var(--moss);
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 400;
+  }
+
+  /* HERO */
+  .hero {
+    padding: 48px 20px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 8vw, 72px);
+    font-weight: 300;
+    line-height: 1;
+    color: var(--moss);
+    margin-bottom: 12px;
+  }
+  .hero-title em { font-style: italic; }
+  .hero-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    line-height: 1.8;
+    max-width: 340px;
+  }
+
+  /* FILTERS */
+  .filters-wrap {
+    background: var(--moss);
+    position: sticky;
+    top: 61px;
+    z-index: 90;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filters-wrap::-webkit-scrollbar { display: none; }
+  .filters {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    white-space: nowrap;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .filter-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    padding: 14px 18px;
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .filter-btn.active {
+    color: var(--white);
+    border-bottom-color: var(--white);
+  }
+  .filter-btn:hover { color: var(--white); }
+
+  /* GRID */
+  .collection-header {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 20px 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .collection-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    font-weight: 300;
+    color: var(--text);
+  }
+  .collection-count {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px 40px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+  @media (min-width: 900px) { .grid { grid-template-columns: repeat(4, 1fr); } }
+
+  .card {
+    background: var(--white);
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .card.unavailable { opacity: 0.5; cursor: default; }
+  .card.unavailable:hover { transform: none; box-shadow: none; }
+
+  .card-img {
+    aspect-ratio: 1;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; }
+  .card-img-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-img-placeholder svg { opacity: 0.25; }
+  .card-img-placeholder span {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .unavailable-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: var(--unavailable);
+    color: var(--white);
+    font-size: 7px;
+    letter-spacing: 2px;
+    padding: 4px 8px;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+  .selected-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--moss);
+    color: var(--white);
+    font-size: 7px;
+    letter-spacing: 2px;
+    padding: 4px 8px;
+    text-transform: uppercase;
+    border-radius: 2px;
+  }
+
+  .card-body { padding: 12px; }
+  .card-code {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .card-name {
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--text);
+    font-weight: 300;
+    margin-bottom: 8px;
+    text-transform: lowercase;
+    letter-spacing: 0.3px;
+  }
+  .card-name::first-letter { text-transform: uppercase; }
+  .card-cat {
+    font-size: 8px;
+    letter-spacing: 1px;
+    color: var(--moss-light);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+  }
+  .card-add {
+    background: var(--moss);
+    border: none;
+    color: var(--white);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .card-add:hover { background: var(--moss-dark); }
+  .card-remove {
+    background: #c0392b;
+    border: none;
+    color: var(--white);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  /* CART MODAL */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 200;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { display: block; }
+
+  .cart-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: min(420px, 100vw);
+    background: var(--white);
+    z-index: 201;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .cart-panel.open { transform: translateX(0); }
+
+  .cart-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--moss);
+    color: var(--white);
+  }
+  .cart-header-title {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    font-weight: 300;
+    text-transform: uppercase;
+  }
+  .cart-close {
+    background: none;
+    border: none;
+    color: var(--white);
+    font-size: 22px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .cart-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .cart-items::-webkit-scrollbar { width: 4px; }
+  .cart-items::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .cart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text-muted);
+  }
+  .cart-empty p { font-size: 12px; letter-spacing: 1px; }
+
+  .cart-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+  .cart-item-code {
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .cart-item-name {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.4;
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+  .cart-item-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    color: var(--moss);
+  }
+  .cart-item-remove {
+    margin-left: auto;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 12px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cart-item-remove:hover { border-color: #c0392b; color: #c0392b; }
+
+  .cart-footer {
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .total-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); }
+  .total-value { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 400; color: var(--text); }
+
+  .checkout-btn {
+    width: 100%;
+    background: var(--moss);
+    color: var(--white);
+    border: none;
+    padding: 16px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    font-weight: 300;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: background 0.2s;
+  }
+  .checkout-btn:hover { background: var(--moss-dark); }
+  .checkout-btn:disabled { background: var(--unavailable); cursor: not-allowed; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--moss);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    transition: transform 0.3s ease;
+    z-index: 500;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* WHATSAPP FAB */
+  .wa-fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: #6b6844;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(107,104,68,0.35);
+    cursor: pointer;
+    z-index: 150;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: none;
+    text-decoration: none;
+  }
+  .wa-fab:hover { transform: scale(1.08); box-shadow: 0 8px 24px rgba(107,104,68,0.45); }
+  .wa-fab svg { width: 28px; height: 28px; fill: white; }
+
+  .loading { opacity: 0.6; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-main">CASA · GAMA</div>
+      <div class="logo-sub">Curated Living</div>
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+      Carrinho
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="hero">
+  <p class="hero-label">EST. 2024 — Quaraí, Rio Grande do Sul</p>
+  <h1 class="hero-title">CASA <em>GAMA</em></h1>
+  <p class="hero-desc">Detalhes com propósito. Objetos que transformam ambientes em experiências.</p>
+</div>
+
+<div class="filters-wrap">
+  <div class="filters" id="filters"></div>
+</div>
+
+<div class="collection-header">
+  <h2 class="collection-title">Coleção</h2>
+  <span class="collection-count" id="itemCount"></span>
+</div>
+
+<div class="grid" id="productGrid"></div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+
+<!-- CART PANEL -->
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <span class="cart-header-title">Seu Pedido</span>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1">
+        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <path d="M16 10a4 4 0 01-8 0"/>
+      </svg>
+      <p>Seu carrinho está vazio</p>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span class="total-label">Total</span>
+      <span class="total-value" id="cartTotal">R$ 0,00</span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="sendToWhatsApp()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+      </svg>
+      Finalizar via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- WHATSAPP FAB -->
+<a class="wa-fab" id="waFab" href="#" title="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"></script>
+
+<!-- Firebase Config e Funções -->
+<script src="firebase-config.js"></script>
+
+<script>
+// ========== STATE ==========
+let products = [];
+let cart = [];
+let activeFilter = 'TODOS';
+let unsubscribeProducts = null;
+
+// ========== INIT ==========
+function init() {
+  loadProducts();
+  renderFilters();
+  updateCartUI();
+}
+
+// ========== LOAD DATA ==========
+function loadProducts() {
+  // Monitora mudanças em tempo real
+  unsubscribeProducts = onProductsChanged(updatedProducts => {
+    products = updatedProducts;
+    renderGrid();
+    renderFilters();
+  });
+}
+
+// ========== RENDER ==========
+function renderFilters() {
+  const categories = ['TODOS', ...new Set(products.map(p => p.category))];
+  const html = categories.map(cat => `
+    <button class="filter-btn ${activeFilter === cat ? 'active' : ''}" onclick="setFilter('${cat}')">${cat}</button>
+  `).join('');
+  document.getElementById('filters').innerHTML = html;
+}
+
+function setFilter(cat) {
+  activeFilter = cat;
+  renderFilters();
+  renderGrid();
+}
+
+function renderGrid() {
+  const filtered = products.filter(p => activeFilter === 'TODOS' || p.category === activeFilter);
+  
+  const html = filtered.map(p => {
+    const isInCart = cart.some(item => item.id === p.id);
+    const isAvailable = p.quantity > 0;
+    
+    return `
+      <div class="card ${!isAvailable ? 'unavailable' : ''}" onclick="${isAvailable ? `openProductDetail('${p.id}')` : ''}">
+        <div class="card-img">
+          ${p.image ? `<img src="${p.image}" alt="${p.name}">` : `
+            <div class="card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21,15 16,10 5,21"/>
+              </svg>
+              <span>Sem foto</span>
+            </div>
+          `}
+          ${!isAvailable ? '<span class="unavailable-badge">Esgotado</span>' : ''}
+          ${isInCart ? '<span class="selected-badge">No carrinho</span>' : ''}
+        </div>
+        <div class="card-body">
+          <div class="card-code">${p.code}</div>
+          <div class="card-name">${p.name}</div>
+          <div class="card-cat">${p.category}</div>
+          <div class="card-footer">
+            <div class="card-price">R$ ${p.price.toFixed(2).replace('.', ',')}</div>
+            <button class="card-add ${isInCart ? 'card-remove' : ''}" onclick="event.stopPropagation(); toggleCart('${p.id}')">
+              ${isInCart ? '−' : '+'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('productGrid').innerHTML = html || '<p style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-muted);">Nenhum produto encontrado</p>';
+  document.getElementById('itemCount').textContent = `${filtered.length} produto${filtered.length !== 1 ? 's' : ''}`;
+}
+
+// ========== CART ==========
+function toggleCart(productId) {
+  const product = products.find(p => p.id === productId);
+  if (!product || product.quantity === 0) return;
+  
+  const existingItem = cart.find(item => item.id === productId);
+  
+  if (existingItem) {
+    cart = cart.filter(item => item.id !== productId);
+    showToast('Removido do carrinho');
+  } else {
+    cart.push({
+      id: product.id,
+      code: product.code,
+      name: product.name,
+      price: product.price
+    });
+    showToast('Adicionado ao carrinho');
+  }
+  
+  updateCartUI();
+  renderGrid();
+}
+
+function updateCartUI() {
+  document.getElementById('cartCount').textContent = cart.length;
+  
+  const cartItemsDiv = document.getElementById('cartItems');
+  
+  if (cart.length === 0) {
+    cartItemsDiv.innerHTML = `
+      <div class="cart-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1">
+          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <path d="M16 10a4 4 0 01-8 0"/>
+        </svg>
+        <p>Seu carrinho está vazio</p>
+      </div>
+    `;
+  } else {
+    const html = cart.map(item => `
+      <div class="cart-item">
+        <div>
+          <div class="cart-item-code">${item.code}</div>
+          <div class="cart-item-name">${item.name}</div>
+          <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.', ',')}</div>
+        </div>
+        <button class="cart-item-remove" onclick="toggleCart('${item.id}')">×</button>
+      </div>
+    `).join('');
+    cartItemsDiv.innerHTML = html;
+  }
+  
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  document.getElementById('cartTotal').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+  document.getElementById('checkoutBtn').disabled = cart.length === 0;
+}
+
+function openCart() {
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('cartPanel').classList.add('open');
+}
+
+function closeCart() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('cartPanel').classList.remove('open');
+}
+
+// ========== WHATSAPP ==========
+async function sendToWhatsApp() {
+  if (cart.length === 0) {
+    showToast('Carrinho vazio', true);
+    return;
+  }
+
+  const customerName = prompt('Qual é o seu nome?');
+  if (!customerName) return;
+
+  const customerPhone = prompt('Qual é o seu WhatsApp? (apenas números)');
+  if (!customerPhone) return;
+
+  const items = cart.map(item => `• ${item.name} - R$ ${item.price.toFixed(2).replace('.', ',')}`).join('\n');
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  
+  const message = `Olá! Gostaria de fazer um pedido:\n\n${items}\n\n*Total: R$ ${total.toFixed(2).replace('.', ',')}\n\n*Cliente:* ${customerName}\n*WhatsApp:* ${customerPhone}`;
+  
+  // Buscar número da loja do Firestore
+  try {
+    const configDoc = await db.collection('config').doc('whatsapp').get();
+    const waNumber = configDoc.exists ? configDoc.data().number : '5555999999999';
+    
+    const encodedMsg = encodeURIComponent(message);
+    const waUrl = `https://wa.me/${waNumber}?text=${encodedMsg}`;
+    window.open(waUrl, '_blank');
+    
+    cart = [];
+    updateCartUI();
+    closeCart();
+    showToast('Pedido enviado!');
+  } catch (error) {
+    console.error('Erro ao enviar:', error);
+    showToast('Erro ao enviar pedido', true);
+  }
+}
+
+function openProductDetail(productId) {
+  // Função placeholder para detalhe do produto
+  // Pode ser expandida para mostrar modal com detalhes
+  const product = products.find(p => p.id === productId);
+  if (product && product.quantity > 0) {
+    toggleCart(productId);
+  }
+}
+
+// ========== TOAST ==========
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.background = isError ? '#c0392b' : 'var(--moss)';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ========== INIT ==========
+init();
+</script>
+
+</body>
+</html>
