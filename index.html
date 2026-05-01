@@ -6,6 +6,7 @@
 <title>CASA GAMA - Curated Living</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+
 <style>
   /* =====================================================
      TOKENS DE DESIGN
@@ -173,6 +174,16 @@
   .btn-secondary:hover { border-color:var(--moss); color:var(--moss); }
   .btn-whatsapp { flex:2; background:#25D366; border:none; color:white; padding:14px; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:4px; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s; }
   .btn-whatsapp:hover { background:#1ebe5a; }
+
+  /* INDISPONÍVEL */
+  .card-unavailable { cursor: default; }
+  .card-unavailable:hover { transform: none; box-shadow: none; }
+  .unavail-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.55); color: #fff;
+    font-size: 7px; letter-spacing: 2px; padding: 4px 8px;
+    text-transform: uppercase; border-radius: 2px;
+  }
 
   /* PRODUCT DETAIL MODAL (bottom sheet) */
   .product-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:flex-end; justify-content:center; }
@@ -506,13 +517,12 @@ function formatPrice(v) {
 }
 
 function getCategories() {
-  const available = catalog.filter(p => p.qty > 0);
-  return ['TODOS', ...new Set(available.map(p => p.category))];
+  return ['TODOS', ...new Set(catalog.map(p => p.category))];
 }
 
 function filteredProducts() {
-  const available = catalog.filter(p => p.qty > 0);
-  return activeFilter === 'TODOS' ? available : available.filter(p => p.category === activeFilter);
+  const all = catalog;
+  return activeFilter === 'TODOS' ? all : all.filter(p => p.category === activeFilter);
 }
 
 function render() {
@@ -535,7 +545,9 @@ function renderGrid() {
   const products = filteredProducts();
   const count = document.getElementById('itemCount');
   const grid  = document.getElementById('productGrid');
-  count.textContent = `${products.length} peça${products.length!==1?'s':''} disponíve${products.length!==1?'is':'l'}`;
+  const avail = products.filter(p => p.qty > 0).length;
+  const total = products.length;
+  count.textContent = total + ' peça' + (total!==1?'s':'') + ' · ' + avail + ' disponíve' + (avail!==1?'is':'l');
 
   if (!products.length) {
     grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted);font-size:12px;letter-spacing:1px;">Nenhuma peça disponível nesta categoria</div>`;
@@ -543,25 +555,29 @@ function renderGrid() {
   }
 
   grid.innerHTML = products.map(p => {
-    const inCart = cart.find(c => c.code === p.code);
+    const inCart   = cart.find(c => c.code === p.code);
+    const unavail  = p.qty === 0;
     return `
-    <div class="card" onclick="window._openDetail('${p.code}')">
+    <div class="card ${unavail?'card-unavailable':''}" onclick="window._openDetail('${p.code}')">
       <div class="card-img">
         ${p.image
-          ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
+          ? `<img src="${p.image}" alt="${p.name}" loading="lazy" style="${unavail?'filter:grayscale(60%);opacity:.7':''}">`
           : `<div class="card-img-placeholder">
                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
                <span>${p.code}</span>
              </div>`}
-        ${inCart ? '<div class="selected-badge">✓ Selecionado</div>' : ''}
+        ${unavail  ? '<div class="unavail-badge">Indisponível</div>' : ''}
+        ${inCart && !unavail ? '<div class="selected-badge">✓ Selecionado</div>' : ''}
       </div>
       <div class="card-body">
         <div class="card-code">${p.code}</div>
         <div class="card-name">${p.name}</div>
         <div class="card-cat">${p.category}</div>
         <div class="card-footer">
-          <div class="card-price">${formatPrice(p.price)}</div>
-          <div class="card-add">${inCart?'✓':'+'}</div>
+          <div class="card-price" style="${unavail?'color:var(--text-muted)':''}">${formatPrice(p.price)}</div>
+          ${unavail
+            ? '<div style="font-size:8px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;">Esgotado</div>'
+            : `<div class="card-add">${inCart?'✓':'+'}</div>`}
         </div>
       </div>
     </div>`;
@@ -648,7 +664,8 @@ window._removeItem = (code) => {
 // Abre modal de detalhe do produto
 window._openDetail = (code) => {
   const p = catalog.find(x => x.code === code);
-  if (!p || p.qty === 0) return;
+  if (!p) return;
+  if (p.qty === 0) { showToast('Produto indisponível no momento'); return; }
   currentModalCode = code;
 
   // Imagem
@@ -748,6 +765,7 @@ window.sendToWhatsApp = async () => {
   try { await baixarEstoque(); } catch(e) { console.warn("Erro ao baixar estoque:", e); }
 
   window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
 
   // Reseta estado
   cart = [];
