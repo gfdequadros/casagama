@@ -773,6 +773,7 @@ window.sendToWhatsApp = async () => {
   if (desconto > 0) msg += `Subtotal: ${formatPrice(subtotal)}\nDesconto PIX (5%): - ${formatPrice(desconto)}\n`;
   msg += `*TOTAL: ${formatPrice(total)}*\n`;
   msg += `*Pagamento:* ${payLabel}\n`;
+  if (selectedPayment === 'pix') msg += `*Chave PIX:* 56.428.577/0001-53 (CNPJ)\n`;
   if (selectedPayment === 'dinheiro' && trocoVal) msg += `*Troco para:* ${trocoVal}\n`;
   if (isGift && giftMsg) msg += `\n*Mensagem presente:* "${giftMsg}"\n`;
   if (obs) msg += `\n*Observações:* ${obs}\n`;
