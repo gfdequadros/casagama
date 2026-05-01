@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CASA GAMA - Curated Living</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  /* =====================================================
+     TOKENS DE DESIGN
+     ===================================================== */
+  :root {
+    --bg:           #f8f4ef;
+    --moss:         #6b6844;
+    --moss-dark:    #55533a;
+    --moss-light:   #8a8760;
+    --text:         #2a2a2a;
+    --text-muted:   #888880;
+    --white:        #ffffff;
+    --border:       #e0dbd4;
+    --unavailable:  #c5bfb8;
+    --gift-accent:  #aa6748;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { font-family:'Jost',sans-serif; background:var(--bg); color:var(--text); font-weight:300; min-height:100vh; }
+
+  /* LOADING SCREEN */
+  #loadingScreen {
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    z-index:999; gap:20px; transition:opacity 0.4s;
+  }
+  #loadingScreen.hidden { opacity:0; pointer-events:none; }
+  .loading-dot {
+    width:8px; height:8px; background:var(--moss); border-radius:50%;
+    animation:pulse 1.2s ease-in-out infinite;
+  }
+  .loading-dot:nth-child(2) { animation-delay:0.2s; }
+  .loading-dot:nth-child(3) { animation-delay:0.4s; }
+  .loading-dots { display:flex; gap:6px; }
+  @keyframes pulse { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
+  .loading-label { font-size:9px; letter-spacing:4px; color:var(--text-muted); text-transform:uppercase; }
+
+  /* HEADER */
+  header { background:var(--bg); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; backdrop-filter:blur(8px); }
+  .header-inner { max-width:1200px; margin:0 auto; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .logo { display:flex; flex-direction:column; }
+  .cart-btn {
+    display:flex; align-items:center; gap:8px; background:var(--moss); color:var(--white);
+    border:none; padding:10px 18px; font-family:'Jost',sans-serif; font-size:11px; font-weight:300;
+    letter-spacing:2px; cursor:pointer; text-transform:uppercase; border-radius:2px; transition:background 0.2s;
+  }
+  .cart-btn:hover { background:var(--moss-dark); }
+  .cart-count {
+    background:var(--white); color:var(--moss); border-radius:50%;
+    width:18px; height:18px; font-size:10px; display:flex; align-items:center; justify-content:center; font-weight:400;
+  }
+
+  /* HERO */
+  .hero { padding:48px 20px 32px; max-width:1200px; margin:0 auto; border-bottom:1px solid var(--border); }
+  .hero-label { font-size:9px; letter-spacing:4px; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px; }
+  .hero-desc { font-size:12px; color:var(--text-muted); letter-spacing:1px; line-height:1.8; max-width:340px; }
+
+  /* FILTERS */
+  .filters-wrap { background:var(--moss); position:sticky; top:61px; z-index:90; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .filters-wrap::-webkit-scrollbar { display:none; }
+  .filters { display:flex; white-space:nowrap; max-width:1200px; margin:0 auto; }
+  .filter-btn {
+    background:none; border:none; color:rgba(255,255,255,0.6); padding:14px 18px; font-family:'Jost',sans-serif;
+    font-size:9px; font-weight:300; letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+    border-bottom:2px solid transparent; transition:all 0.2s; flex-shrink:0;
+  }
+  .filter-btn.active { color:var(--white); border-bottom-color:var(--white); }
+  .filter-btn:hover { color:var(--white); }
+
+  /* GRID */
+  .collection-header { max-width:1200px; margin:0 auto; padding:28px 20px 16px; display:flex; align-items:baseline; justify-content:space-between; }
+  .collection-title { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; color:var(--text); }
+  .collection-count { font-size:10px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; }
+  .grid { max-width:1200px; margin:0 auto; padding:0 16px 100px; display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+  @media(min-width:600px){ .grid { grid-template-columns:repeat(3,1fr); gap:16px; } }
+  @media(min-width:900px){ .grid { grid-template-columns:repeat(4,1fr); } }
+
+  .card { background:var(--white); border-radius:4px; overflow:hidden; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; position:relative; }
+  .card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+  .card-img { aspect-ratio:1; background:var(--bg); display:flex; align-items:center; justify-content:center; overflow:hidden; position:relative; }
+  .card-img img { width:100%; height:100%; object-fit:cover; }
+  .card-img-placeholder { display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.3; }
+  .card-img-placeholder span { font-size:8px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; }
+  .selected-badge { position:absolute; top:10px; left:10px; background:var(--moss); color:var(--white); font-size:7px; letter-spacing:2px; padding:4px 8px; text-transform:uppercase; border-radius:2px; }
+  .card-body { padding:12px; }
+  .card-code { font-size:8px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px; }
+  .card-name { font-size:11px; line-height:1.4; color:var(--text); font-weight:300; margin-bottom:8px; }
+  .card-cat { font-size:8px; letter-spacing:1px; color:var(--moss-light); text-transform:uppercase; margin-bottom:10px; }
+  .card-footer { display:flex; align-items:center; justify-content:space-between; }
+  .card-price { font-family:'Cormorant Garamond',serif; font-size:16px; font-weight:400; color:var(--text); }
+  .card-add {
+    background:var(--moss); border:none; color:var(--white); width:28px; height:28px;
+    border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    transition:background 0.2s; flex-shrink:0; line-height:1;
+  }
+  .card-add:hover { background:var(--moss-dark); }
+
+  /* CART PANEL */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; backdrop-filter:blur(2px); }
+  .overlay.open { display:block; }
+  .cart-panel {
+    position:fixed; right:0; top:0; bottom:0; width:min(420px,100vw); background:var(--white);
+    z-index:201; transform:translateX(100%); transition:transform 0.3s ease; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .cart-panel.open { transform:translateX(0); }
+  .cart-header { padding:24px 20px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:var(--moss); color:var(--white); }
+  .cart-header-title { font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; font-weight:300; text-transform:uppercase; }
+  .cart-close { background:none; border:none; color:var(--white); font-size:22px; cursor:pointer; line-height:1; padding:0; }
+  .cart-items { flex:1; overflow-y:auto; padding:16px; }
+  .cart-items::-webkit-scrollbar { width:4px; }
+  .cart-items::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+  .cart-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:12px; color:var(--text-muted); }
+  .cart-empty p { font-size:12px; letter-spacing:1px; }
+  .cart-item { display:flex; gap:12px; padding:12px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+  .cart-item-code { font-size:8px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:2px; }
+  .cart-item-name { font-size:11px; color:var(--text); line-height:1.4; font-weight:300; margin-bottom:4px; }
+  .cart-item-price { font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--moss); }
+  .cart-item-remove { margin-left:auto; background:none; border:1px solid var(--border); color:var(--text-muted); width:24px; height:24px; border-radius:50%; cursor:pointer; font-size:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+  .cart-item-remove:hover { border-color:#c0392b; color:#c0392b; }
+  .cart-footer { padding:20px; border-top:1px solid var(--border); background:var(--bg); }
+
+  /* GIFT */
+  .gift-toggle { display:flex; align-items:center; gap:12px; padding:14px; background:var(--white); border:1px solid var(--border); border-radius:4px; margin-bottom:14px; cursor:pointer; transition:border-color 0.2s; }
+  .gift-toggle.active { border-color:var(--gift-accent); }
+  .gift-icon { font-size:18px; }
+  .gift-text { flex:1; }
+  .gift-label { font-size:11px; font-weight:300; letter-spacing:1px; color:var(--text); }
+  .gift-sublabel { font-size:9px; color:var(--text-muted); letter-spacing:1px; margin-top:2px; }
+  .gift-check { width:20px; height:20px; border:2px solid var(--border); border-radius:50%; display:flex; align-items:center; justify-content:center; transition:all 0.2s; flex-shrink:0; }
+  .gift-toggle.active .gift-check { background:var(--gift-accent); border-color:var(--gift-accent); color:white; font-size:10px; }
+  .gift-message-wrap { display:none; margin-bottom:14px; }
+  .gift-message-wrap.show { display:block; }
+  .gift-message-wrap textarea { width:100%; border:1px solid var(--border); border-radius:4px; padding:10px; font-family:'Jost',sans-serif; font-size:11px; font-weight:300; color:var(--text); background:var(--white); resize:none; height:70px; outline:none; }
+  .gift-message-wrap textarea:focus { border-color:var(--moss); }
+
+  /* PAYMENT IN CART */
+  .payment-section { margin-bottom:14px; }
+  .payment-label { font-size:9px; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:10px; }
+  .payment-options { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+  .payment-opt { border:1px solid var(--border); background:var(--white); border-radius:4px; padding:8px 4px; cursor:pointer; text-align:center; transition:all 0.2s; }
+  .payment-opt.selected { border-color:var(--moss); background:var(--moss); color:var(--white); }
+  .payment-opt-icon { font-size:14px; margin-bottom:2px; }
+  .payment-opt-name { font-size:8px; letter-spacing:1px; text-transform:uppercase; }
+  .cart-total { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px; padding-top:12px; border-top:1px solid var(--border); }
+  .total-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); }
+  .total-value { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:400; color:var(--text); }
+  .checkout-btn { width:100%; background:var(--moss); color:var(--white); border:none; padding:16px; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; font-weight:300; text-transform:uppercase; cursor:pointer; border-radius:4px; display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.2s; }
+  .checkout-btn:hover { background:var(--moss-dark); }
+  .checkout-btn:disabled { background:var(--unavailable); cursor:not-allowed; }
+
+  /* CUSTOMER MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:flex-end; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  @media(min-width:600px){ .modal-overlay.open { align-items:center; } }
+  .modal { background:var(--white); width:min(480px,100vw); border-radius:12px 12px 0 0; padding:28px 24px 32px; max-height:90vh; overflow-y:auto; }
+  @media(min-width:600px){ .modal { border-radius:8px; } }
+  .modal-title { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:300; margin-bottom:6px; color:var(--text); }
+  .modal-sub { font-size:10px; letter-spacing:1px; color:var(--text-muted); margin-bottom:24px; }
+  .form-field { margin-bottom:14px; }
+  .form-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; display:block; }
+  .form-input { width:100%; border:1px solid var(--border); border-radius:4px; padding:12px 14px; font-family:'Jost',sans-serif; font-size:13px; font-weight:300; color:var(--text); background:var(--bg); outline:none; transition:border-color 0.2s; }
+  .form-input:focus { border-color:var(--moss); background:var(--white); }
+  .modal-actions { display:flex; gap:10px; margin-top:20px; }
+  .btn-secondary { flex:1; background:none; border:1px solid var(--border); padding:14px; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:4px; color:var(--text); transition:all 0.2s; }
+  .btn-secondary:hover { border-color:var(--moss); color:var(--moss); }
+  .btn-whatsapp { flex:2; background:#25D366; border:none; color:white; padding:14px; font-family:'Jost',sans-serif; font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; border-radius:4px; display:flex; align-items:center; justify-content:center; gap:8px; transition:background 0.2s; }
+  .btn-whatsapp:hover { background:#1ebe5a; }
+
+  /* PRODUCT DETAIL MODAL (bottom sheet) */
+  .product-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; align-items:flex-end; justify-content:center; }
+  .product-modal-overlay.open { display:flex; }
+  @media(min-width:600px){ .product-modal-overlay { align-items:center; padding:20px; } }
+  .product-modal { background:var(--bg); width:min(440px,100vw); border-radius:20px 20px 0 0; overflow:hidden; transform:translateY(100%); transition:transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height:96vh; display:flex; flex-direction:column; }
+  .product-modal-overlay.open .product-modal { transform:translateY(0); }
+  @media(min-width:600px){
+    .product-modal { border-radius:16px; transform:scale(0.95); opacity:0; transition:transform 0.25s ease,opacity 0.25s ease; }
+    .product-modal-overlay.open .product-modal { transform:scale(1); opacity:1; }
+  }
+  .modal-drag-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:12px auto 0; flex-shrink:0; }
+  @media(min-width:600px){ .modal-drag-handle { display:none; } }
+  .pm-close { position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.85); border:none; width:32px; height:32px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; color:var(--text); z-index:10; backdrop-filter:blur(4px); }
+  .pm-image { width:100%; aspect-ratio:4/3; background:var(--white); position:relative; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .pm-image img { width:100%; height:100%; object-fit:cover; }
+  .pm-image-placeholder { display:flex; flex-direction:column; align-items:center; gap:10px; opacity:0.25; }
+  .pm-body { padding:20px 24px 0; overflow-y:auto; flex:1; }
+  .pm-body::-webkit-scrollbar { display:none; }
+  .pm-code { font-size:9px; letter-spacing:3px; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; }
+  .pm-name { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:300; line-height:1.1; color:var(--text); text-transform:uppercase; margin-bottom:10px; letter-spacing:1px; }
+  .pm-cat-tag { display:inline-block; background:var(--white); border:1px solid var(--border); padding:4px 12px; border-radius:20px; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:18px; }
+  .pm-price { font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:400; color:var(--text); line-height:1; margin-bottom:20px; display:flex; align-items:flex-start; gap:2px; }
+  .pm-price-currency { font-size:18px; margin-top:8px; font-weight:300; font-family:'Jost',sans-serif; }
+  .pm-divider { width:20px; height:1px; background:var(--moss-light); margin:0 auto 20px; transform:rotate(45deg); }
+  .pm-payment-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
+  .pm-payment-opts { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+  .pm-pay-opt { display:flex; align-items:center; gap:12px; background:var(--white); border:1.5px solid var(--border); border-radius:8px; padding:12px 16px; cursor:pointer; transition:all 0.15s; }
+  .pm-pay-opt.selected { border-color:var(--moss); }
+  .pm-pay-radio { width:18px; height:18px; border-radius:50%; border:2px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; }
+  .pm-pay-opt.selected .pm-pay-radio { border-color:var(--moss); background:var(--moss); }
+  .pm-pay-opt.selected .pm-pay-radio::after { content:''; width:6px; height:6px; border-radius:50%; background:white; display:block; }
+  .pm-pay-icon { font-size:16px; flex-shrink:0; }
+  .pm-pay-name { flex:1; font-size:11px; letter-spacing:1px; text-transform:uppercase; font-weight:400; color:var(--text); }
+  .pm-pay-badge { font-size:8px; letter-spacing:1px; padding:3px 8px; border-radius:10px; font-weight:400; }
+  .badge-pix     { background:#e8f5e9; color:#2e7d32; }
+  .badge-cartao  { background:#f3f4f6; color:#666; }
+  .badge-dinheiro{ background:#fef9e7; color:#7d6608; }
+
+  /* TROCO */
+  .troco-wrap { display:none; margin-top:8px; padding:12px 14px; background:#fef9e7; border:1px solid #f9e79f; border-radius:8px; }
+  .troco-wrap.show { display:block; }
+  .troco-label { font-size:9px; letter-spacing:2px; text-transform:uppercase; color:#7d6608; margin-bottom:8px; display:block; }
+  .troco-input { width:100%; border:1px solid #f9e79f; border-radius:6px; padding:10px 12px; font-family:'Jost',sans-serif; font-size:14px; font-weight:300; color:var(--text); background:var(--white); outline:none; transition:border-color 0.2s; }
+  .troco-input:focus { border-color:#f1c40f; }
+
+  /* PRODUCT MODAL FOOTER */
+  .pm-footer { padding:16px 24px 32px; flex-shrink:0; }
+  @media(min-width:600px){ .pm-footer { padding-bottom:20px; } }
+  .pm-add-btn { width:100%; background:var(--moss); color:var(--white); border:none; padding:16px; font-family:'Jost',sans-serif; font-size:11px; letter-spacing:3px; font-weight:300; text-transform:uppercase; cursor:pointer; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; transition:background 0.2s,transform 0.1s; }
+  .pm-add-btn:active { transform:scale(0.98); }
+  .pm-add-btn:hover { background:var(--moss-dark); }
+  .pm-add-btn.in-cart { background:#c0392b; }
+  .pm-add-btn.in-cart:hover { background:#a93226; }
+
+  /* WHATSAPP FAB */
+  .wa-fab { position:fixed; bottom:24px; right:24px; width:56px; height:56px; background:var(--moss); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(107,104,68,0.35); cursor:pointer; z-index:150; transition:transform 0.2s,box-shadow 0.2s; border:none; text-decoration:none; }
+  .wa-fab:hover { transform:scale(1.08); box-shadow:0 8px 24px rgba(107,104,68,0.45); }
+  .wa-fab svg { width:28px; height:28px; fill:white; }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--moss); color:var(--white); padding:12px 20px; border-radius:4px; font-size:11px; letter-spacing:1px; transition:transform 0.3s ease; z-index:600; white-space:nowrap; }
+  .toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <svg width="120" height="28" viewBox="0 0 320 72" xmlns="http://www.w3.org/2000/svg">
+    <text x="0" y="52" font-family="'Cormorant Garamond',Georgia,serif" font-weight="300" font-size="56" letter-spacing="4" fill="#6b6844">CASA</text>
+    <circle cx="196" cy="40" r="4" fill="#6b6844"/>
+    <text x="210" y="52" font-family="'Cormorant Garamond',Georgia,serif" font-weight="300" font-size="56" font-style="italic" letter-spacing="4" fill="#6b6844">GAMA</text>
+  </svg>
+  <div class="loading-dots">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+  <span class="loading-label">Carregando coleção</span>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <svg width="160" height="36" viewBox="0 0 320 72" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="32" font-family="'Jost','Helvetica Neue',Arial,sans-serif" font-weight="200" font-size="28" letter-spacing="8" fill="#6b6844">CASA</text>
+        <circle cx="134" cy="26" r="3" fill="#6b6844"/>
+        <text x="145" y="32" font-family="'Jost','Helvetica Neue',Arial,sans-serif" font-weight="200" font-size="28" letter-spacing="8" fill="#6b6844">GAMA</text>
+        <text x="0" y="52" font-family="'Jost','Helvetica Neue',Arial,sans-serif" font-weight="300" font-size="9" letter-spacing="4" fill="#aaa8a0">CURATED LIVING</text>
+      </svg>
+    </div>
+    <button class="cart-btn" onclick="toggleCart()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Carrinho
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <p class="hero-label">EST. 2024 — Quaraí, Rio Grande do Sul</p>
+  <div style="margin-bottom:12px;">
+    <svg width="min(320px,80vw)" viewBox="0 0 420 90" xmlns="http://www.w3.org/2000/svg" style="display:block;overflow:visible;">
+      <text x="0" y="68" font-family="'Cormorant Garamond',Georgia,serif" font-weight="300" font-size="72" letter-spacing="4" fill="#6b6844">CASA</text>
+      <circle cx="252" cy="54" r="4" fill="#6b6844"/>
+      <text x="268" y="68" font-family="'Cormorant Garamond',Georgia,serif" font-weight="300" font-size="72" font-style="italic" letter-spacing="4" fill="#6b6844">GAMA</text>
+    </svg>
+  </div>
+  <p class="hero-desc">Detalhes com propósito. Objetos que transformam ambientes em experiências.</p>
+</div>
+
+<!-- FILTROS -->
+<div class="filters-wrap">
+  <div class="filters" id="filters"></div>
+</div>
+
+<div class="collection-header">
+  <h2 class="collection-title">Coleção</h2>
+  <span class="collection-count" id="itemCount"></span>
+</div>
+<div class="grid" id="productGrid"></div>
+
+<!-- OVERLAY CARRINHO -->
+<div class="overlay" id="overlay" onclick="closeCart()"></div>
+
+<!-- CARRINHO LATERAL -->
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-header">
+    <span class="cart-header-title">Seu Pedido</span>
+    <button class="cart-close" onclick="closeCart()">×</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <p>Seu carrinho está vazio</p>
+    </div>
+  </div>
+  <div class="cart-footer">
+    <!-- Presente -->
+    <div class="gift-toggle" id="giftToggle" onclick="toggleGift()">
+      <span class="gift-icon">🎁</span>
+      <div class="gift-text">
+        <div class="gift-label">É um presente?</div>
+        <div class="gift-sublabel">Adicionar mensagem especial</div>
+      </div>
+      <div class="gift-check" id="giftCheck"></div>
+    </div>
+    <div class="gift-message-wrap" id="giftMsgWrap">
+      <textarea id="giftMessage" placeholder="Escreva sua mensagem para o presenteado..."></textarea>
+    </div>
+    <!-- Pagamento rápido -->
+    <div class="payment-section">
+      <div class="payment-label">Forma de Pagamento</div>
+      <div class="payment-options" id="paymentOptions"></div>
+    </div>
+    <div class="cart-total">
+      <span class="total-label">Total</span>
+      <span class="total-value" id="cartTotal">R$ 0,00</span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="openCustomerModal()" disabled>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Finalizar via WhatsApp
+    </button>
+  </div>
+</div>
+
+<!-- MODAL DADOS DO CLIENTE -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3 class="modal-title">Quase lá!</h3>
+    <p class="modal-sub">Preencha seus dados para enviar o pedido</p>
+    <div class="form-field">
+      <label class="form-label">Seu Nome *</label>
+      <input class="form-input" id="customerName" type="text" placeholder="Como devemos te chamar?">
+    </div>
+    <div class="form-field">
+      <label class="form-label">WhatsApp *</label>
+      <input class="form-input" id="customerPhone" type="tel" placeholder="(00) 00000-0000">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Observações</label>
+      <input class="form-input" id="customerObs" type="text" placeholder="Endereço de entrega, dúvidas...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Voltar</button>
+      <button class="btn-whatsapp" onclick="sendToWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Enviar Pedido
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETALHE PRODUTO -->
+<div class="product-modal-overlay" id="productModalOverlay" onclick="handleProductModalOverlayClick(event)">
+  <div class="product-modal" id="productModalBox">
+    <div class="modal-drag-handle"></div>
+    <button class="pm-close" onclick="closeProductDetailModal()">×</button>
+    <div class="pm-image" id="pmImage"></div>
+    <div class="pm-body">
+      <div class="pm-code"  id="pmCode"></div>
+      <div class="pm-name"  id="pmName"></div>
+      <div><span class="pm-cat-tag" id="pmCat"></span></div>
+      <div class="pm-price">
+        <span class="pm-price-currency">R$</span>
+        <span id="pmPriceVal"></span>
+      </div>
+      <div class="pm-divider"></div>
+      <div class="pm-payment-label">Escolha a forma de pagamento</div>
+      <div class="pm-payment-opts" id="pmPaymentOpts"></div>
+      <div class="troco-wrap" id="trocoWrap">
+        <label class="troco-label">Troco para quanto?</label>
+        <input class="troco-input" id="trocoInput" type="text" placeholder="Ex: R$ 100,00" inputmode="numeric">
+      </div>
+    </div>
+    <div class="pm-footer">
+      <button class="pm-add-btn" id="pmAddBtn" onclick="toggleFromModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span id="pmAddBtnText">Adicionar ao carrinho</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- WA FAB -->
+<a class="wa-fab" id="waFab" href="#" onclick="event.preventDefault();openWaFab()" title="Falar no WhatsApp">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     JAVASCRIPT — Firebase + Loja
+     ============================================================ -->
+<script type="module">
+
+// ----------------------------------------------------------
+// 0. Imports Firebase (CDN ESM)
+// ----------------------------------------------------------
+import { initializeApp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, doc, updateDoc,
+         query, orderBy, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ----------------------------------------------------------
+// 1. CONFIGURAÇÃO — edite apenas este bloco
+// ----------------------------------------------------------
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyA8MjrgMnWV202EbpNSFS89sBmXHr5AffA",
+  authDomain:        "gamaarq.firebaseapp.com",
+  projectId:         "gamaarq",
+  storageBucket:     "gamaarq.firebasestorage.app",
+  messagingSenderId: "725535528813",
+  appId:             "1:725535528813:web:7c5f9fabca67b89d5a6c64"
+};
+const WHATSAPP_NUMBER = "5555999999999"; // Número da loja com DDI
+
+// ----------------------------------------------------------
+// 2. Inicialização
+// ----------------------------------------------------------
+const app = initializeApp(FIREBASE_CONFIG);
+const db  = getFirestore(app);
+
+// ----------------------------------------------------------
+// 3. Estado da aplicação
+// ----------------------------------------------------------
+let catalog        = [];  // todos os produtos carregados do Firestore
+let cart           = [];  // itens no carrinho (sessão)
+let selectedPayment= '';
+let isGift         = false;
+let activeFilter   = 'TODOS';
+let currentModalCode = null;
+
+const PAYMENT_METHODS = [
+  { id:'pix',      icon:'◈', name:'PIX' },
+  { id:'cartao',   icon:'▤', name:'Cartão' },
+  { id:'dinheiro', icon:'◎', name:'Dinheiro' },
+];
+const MODAL_PAYMENTS = [
+  { id:'pix',      icon:'◈', name:'PIX',      badge:'5% de desconto',    badgeClass:'badge-pix' },
+  { id:'cartao',   icon:'▤', name:'Cartão',   badge:'',                  badgeClass:'badge-cartao' },
+  { id:'dinheiro', icon:'◎', name:'Dinheiro', badge:'Pagamento na entrega', badgeClass:'badge-dinheiro', hasTroco:true },
+];
+
+// ----------------------------------------------------------
+// 4. FIREBASE — listener em tempo real
+//    Atualiza a loja automaticamente quando o admin muda algo
+// ----------------------------------------------------------
+function iniciarListenerProdutos() {
+  const q = query(collection(db, "produtos"), orderBy("code"));
+
+  onSnapshot(q, (snap) => {
+    catalog = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
+    render();
+    // Esconder loading na primeira carga
+    const loading = document.getElementById('loadingScreen');
+    if (loading && !loading.classList.contains('hidden')) {
+      loading.classList.add('hidden');
+      setTimeout(() => loading.style.display = 'none', 400);
+    }
+  }, (err) => {
+    console.error("Erro ao carregar produtos:", err);
+    document.getElementById('loadingScreen').innerHTML =
+      '<p style="color:#c0392b;font-size:12px;letter-spacing:1px;padding:20px;text-align:center">Erro ao conectar com o banco de dados.<br>Verifique a configuração do Firebase.</p>';
+  });
+}
+
+// ----------------------------------------------------------
+// 5. FIREBASE — baixar estoque ao finalizar pedido
+// ----------------------------------------------------------
+async function baixarEstoque() {
+  const promises = cart.map(async (item) => {
+    const p = catalog.find(x => x.code === item.code);
+    if (p && p.qty > 0) {
+      const ref = doc(db, "produtos", item.code);
+      await updateDoc(ref, { qty: p.qty - 1, atualizadoEm: serverTimestamp() });
+    }
+  });
+  await Promise.all(promises);
+}
+
+// ----------------------------------------------------------
+// 6. RENDER
+// ----------------------------------------------------------
+function formatPrice(v) {
+  return 'R$ ' + Number(v).toFixed(2).replace('.', ',');
+}
+
+function getCategories() {
+  const available = catalog.filter(p => p.qty > 0);
+  return ['TODOS', ...new Set(available.map(p => p.category))];
+}
+
+function filteredProducts() {
+  const available = catalog.filter(p => p.qty > 0);
+  return activeFilter === 'TODOS' ? available : available.filter(p => p.category === activeFilter);
+}
+
+function render() {
+  renderFilters();
+  renderGrid();
+  renderCart();
+  renderPayment();
+}
+
+function renderFilters() {
+  const cats = getCategories();
+  // Verifica se filtro ativo ainda existe
+  if (!cats.includes(activeFilter)) activeFilter = 'TODOS';
+  document.getElementById('filters').innerHTML = cats.map(c => `
+    <button class="filter-btn ${activeFilter===c?'active':''}" onclick="window._setFilter('${c}')">${c}</button>
+  `).join('');
+}
+
+function renderGrid() {
+  const products = filteredProducts();
+  const count = document.getElementById('itemCount');
+  const grid  = document.getElementById('productGrid');
+  count.textContent = `${products.length} peça${products.length!==1?'s':''} disponíve${products.length!==1?'is':'l'}`;
+
+  if (!products.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--text-muted);font-size:12px;letter-spacing:1px;">Nenhuma peça disponível nesta categoria</div>`;
+    return;
+  }
+
+  grid.innerHTML = products.map(p => {
+    const inCart = cart.find(c => c.code === p.code);
+    return `
+    <div class="card" onclick="window._openDetail('${p.code}')">
+      <div class="card-img">
+        ${p.image
+          ? `<img src="${p.image}" alt="${p.name}" loading="lazy">`
+          : `<div class="card-img-placeholder">
+               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+               <span>${p.code}</span>
+             </div>`}
+        ${inCart ? '<div class="selected-badge">✓ Selecionado</div>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-code">${p.code}</div>
+        <div class="card-name">${p.name}</div>
+        <div class="card-cat">${p.category}</div>
+        <div class="card-footer">
+          <div class="card-price">${formatPrice(p.price)}</div>
+          <div class="card-add">${inCart?'✓':'+'}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCart() {
+  const el    = document.getElementById('cartItems');
+  const count = document.getElementById('cartCount');
+  const total = document.getElementById('cartTotal');
+  const btn   = document.getElementById('checkoutBtn');
+  count.textContent = cart.length;
+
+  if (!cart.length) {
+    el.innerHTML = `<div class="cart-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <p>Seu carrinho está vazio</p></div>`;
+    total.textContent = 'R$ 0,00';
+    btn.disabled = true;
+    return;
+  }
+
+  const sum = cart.reduce((a,b) => a + b.price, 0);
+  total.textContent = formatPrice(sum);
+  btn.disabled = false;
+  el.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div style="flex:1">
+        <div class="cart-item-code">${item.code}</div>
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${formatPrice(item.price)}</div>
+      </div>
+      <button class="cart-item-remove" onclick="window._removeItem('${item.code}')">×</button>
+    </div>`).join('');
+}
+
+function renderPayment() {
+  document.getElementById('paymentOptions').innerHTML = PAYMENT_METHODS.map(m => `
+    <div class="payment-opt ${selectedPayment===m.id?'selected':''}" onclick="window._selectPayment('${m.id}')">
+      <div class="payment-opt-icon">${m.icon}</div>
+      <div class="payment-opt-name">${m.name}</div>
+    </div>`).join('');
+}
+
+function renderModalPayment() {
+  document.getElementById('pmPaymentOpts').innerHTML = MODAL_PAYMENTS.map(m => `
+    <div class="pm-pay-opt ${selectedPayment===m.id?'selected':''}" onclick="window._selectModalPayment('${m.id}')">
+      <div class="pm-pay-radio"></div>
+      <span class="pm-pay-icon">${m.icon}</span>
+      <span class="pm-pay-name">${m.name}</span>
+      ${m.badge ? `<span class="pm-pay-badge ${m.badgeClass}">${m.badge}</span>` : ''}
+    </div>`).join('');
+}
+
+// ----------------------------------------------------------
+// 7. AÇÕES — expostas ao HTML via window.*
+// ----------------------------------------------------------
+window._setFilter = (cat) => { activeFilter = cat; render(); };
+
+window._selectPayment = (id) => { selectedPayment = id; renderPayment(); };
+
+window._selectModalPayment = (id) => {
+  selectedPayment = id;
+  renderModalPayment();
+  renderPayment();
+  const tw = document.getElementById('trocoWrap');
+  if (tw) tw.classList.toggle('show', id === 'dinheiro');
+};
+
+window._addItem = (code) => {
+  const p = catalog.find(x => x.code === code);
+  if (!p || p.qty < 1 || cart.find(c => c.code === code)) return;
+  cart.push({ code: p.code, name: p.name, price: p.price, category: p.category });
+  showToast('Adicionado ao carrinho');
+  render();
+};
+
+window._removeItem = (code) => {
+  cart = cart.filter(c => c.code !== code);
+  if (currentModalCode === code) updateModalCartBtn(code);
+  render();
+};
+
+// Abre modal de detalhe do produto
+window._openDetail = (code) => {
+  const p = catalog.find(x => x.code === code);
+  if (!p || p.qty === 0) return;
+  currentModalCode = code;
+
+  // Imagem
+  document.getElementById('pmImage').innerHTML = p.image
+    ? `<img src="${p.image}" alt="${p.name}">`
+    : `<div class="pm-image-placeholder">
+         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#bbb" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+         <span style="font-size:9px;letter-spacing:2px;color:#bbb;font-family:'Jost',sans-serif">SEM FOTO</span>
+       </div>`;
+
+  document.getElementById('pmCode').textContent = p.code;
+  document.getElementById('pmName').textContent = p.name.toUpperCase();
+  document.getElementById('pmCat').textContent  = p.category;
+  document.getElementById('pmPriceVal').textContent = ' ' + Number(p.price).toFixed(2).replace('.', ',');
+
+  renderModalPayment();
+  updateModalCartBtn(code);
+  document.getElementById('productModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+function updateModalCartBtn(code) {
+  const inCart = cart.find(c => c.code === code);
+  document.getElementById('pmAddBtn').classList.toggle('in-cart', !!inCart);
+  document.getElementById('pmAddBtnText').textContent = inCart ? 'Remover do carrinho' : 'Adicionar ao carrinho';
+}
+
+window.toggleFromModal = () => {
+  if (!currentModalCode) return;
+  if (cart.find(c => c.code === currentModalCode)) {
+    window._removeItem(currentModalCode);
+    showToast('Removido do carrinho');
+  } else {
+    window._addItem(currentModalCode);
+  }
+  updateModalCartBtn(currentModalCode);
+};
+
+window.handleProductModalOverlayClick = (e) => {
+  if (e.target === document.getElementById('productModalOverlay')) closeProductDetailModal();
+};
+window.closeProductDetailModal = () => {
+  document.getElementById('productModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModalCode = null;
+};
+
+// Carrinho lateral
+window.toggleCart  = () => { document.getElementById('cartPanel').classList.toggle('open'); document.getElementById('overlay').classList.toggle('open'); };
+window.closeCart   = () => { document.getElementById('cartPanel').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); };
+
+// Presente
+window.toggleGift  = () => {
+  isGift = !isGift;
+  document.getElementById('giftToggle').classList.toggle('active', isGift);
+  document.getElementById('giftCheck').textContent = isGift ? '✓' : '';
+  document.getElementById('giftMsgWrap').classList.toggle('show', isGift);
+};
+
+// Modal cliente
+window.openCustomerModal = () => { if (cart.length) document.getElementById('modalOverlay').classList.add('open'); };
+window.closeModal        = () => { document.getElementById('modalOverlay').classList.remove('open'); };
+
+// WhatsApp FAB
+window.openWaFab = () => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, '_blank');
+
+// ----------------------------------------------------------
+// 8. FINALIZAR PEDIDO — gera mensagem e abre WhatsApp
+// ----------------------------------------------------------
+window.sendToWhatsApp = async () => {
+  const name  = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const obs   = document.getElementById('customerObs').value.trim();
+  const giftMsg  = document.getElementById('giftMessage').value.trim();
+  const trocoVal = document.getElementById('trocoInput')?.value?.trim();
+
+  if (!name) { showToast('Por favor, informe seu nome'); return; }
+
+  const payLabel = PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name || selectedPayment || 'Não informado';
+  const total    = cart.reduce((a, b) => a + b.price, 0);
+
+  let msg = `*Olá, CASA GAMA!* 🌿\n\n`;
+  msg += `*Pedido de:* ${name}\n`;
+  if (phone) msg += `*WhatsApp:* ${phone}\n`;
+  msg += `\n*ITENS DO PEDIDO:*\n───────────────\n`;
+  cart.forEach(item => {
+    msg += `▸ ${item.code} | ${item.name}\n  ${formatPrice(item.price)}\n`;
+  });
+  msg += `───────────────\n*TOTAL: ${formatPrice(total)}*\n`;
+  msg += `*Pagamento:* ${payLabel}\n`;
+  if (selectedPayment === 'dinheiro' && trocoVal) msg += `*Troco para:* ${trocoVal}\n`;
+  if (isGift && giftMsg) msg += `\n*Mensagem presente:* "${giftMsg}"\n`;
+  if (obs) msg += `\n*Observações:* ${obs}\n`;
+  msg += `\n_Aguardo confirmação! ✨_`;
+
+  // Baixa estoque no Firestore
+  try { await baixarEstoque(); } catch(e) { console.warn("Erro ao baixar estoque:", e); }
+
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+
+  // Reseta estado
+  cart = [];
+  window.closeModal();
+  window.closeCart();
+  render();
+  showToast('Pedido enviado! Abrindo WhatsApp...');
+};
+
+// ----------------------------------------------------------
+// 9. UTILITÁRIOS
+// ----------------------------------------------------------
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ----------------------------------------------------------
+// 10. INICIALIZAÇÃO
+// ----------------------------------------------------------
+iniciarListenerProdutos();
+
+</script>
+</body>
+</html>
