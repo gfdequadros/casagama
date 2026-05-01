@@ -600,8 +600,11 @@ function renderCart() {
     return;
   }
 
-  const sum = cart.reduce((a,b) => a + b.price, 0);
-  total.textContent = formatPrice(sum);
+  const subtotal  = cart.reduce((a,b) => a + b.price, 0);
+  const isPix     = selectedPayment === 'pix';
+  const desconto  = isPix ? subtotal * 0.05 : 0;
+  const totalFinal= subtotal - desconto;
+
   btn.disabled = false;
   el.innerHTML = cart.map(item => `
     <div class="cart-item">
@@ -611,7 +614,16 @@ function renderCart() {
         <div class="cart-item-price">${formatPrice(item.price)}</div>
       </div>
       <button class="cart-item-remove" onclick="window._removeItem('${item.code}')">×</button>
-    </div>`).join('');
+    </div>`).join('') +
+    (isPix ? `<div style="margin-top:12px;padding:10px 12px;background:#e8f5e9;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:10px;letter-spacing:1px;color:#2e7d32;text-transform:uppercase;">Desconto PIX 5%</span>
+      <span style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#2e7d32;">- ${formatPrice(desconto)}</span>
+    </div>` : '');
+
+  // Subtotal line if pix
+  total.innerHTML = isPix
+    ? `<span style="font-size:13px;color:var(--text-muted);text-decoration:line-through;margin-right:8px;">${formatPrice(subtotal)}</span>${formatPrice(totalFinal)}`
+    : formatPrice(totalFinal);
 }
 
 function renderPayment() {
@@ -637,12 +649,13 @@ function renderModalPayment() {
 // ----------------------------------------------------------
 window._setFilter = (cat) => { activeFilter = cat; render(); };
 
-window._selectPayment = (id) => { selectedPayment = id; renderPayment(); };
+window._selectPayment = (id) => { selectedPayment = id; renderPayment(); renderCart(); };
 
 window._selectModalPayment = (id) => {
   selectedPayment = id;
   renderModalPayment();
   renderPayment();
+  renderCart(); // atualiza desconto PIX no carrinho
   const tw = document.getElementById('trocoWrap');
   if (tw) tw.classList.toggle('show', id === 'dinheiro');
 };
@@ -744,8 +757,10 @@ window.sendToWhatsApp = async () => {
 
   if (!name) { showToast('Por favor, informe seu nome'); return; }
 
-  const payLabel = PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name || selectedPayment || 'Não informado';
-  const total    = cart.reduce((a, b) => a + b.price, 0);
+  const payLabel  = PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name || selectedPayment || 'Não informado';
+  const subtotal  = cart.reduce((a, b) => a + b.price, 0);
+  const desconto  = selectedPayment === 'pix' ? subtotal * 0.05 : 0;
+  const total     = subtotal - desconto;
 
   let msg = `*Olá, CASA GAMA!* 🌿\n\n`;
   msg += `*Pedido de:* ${name}\n`;
@@ -754,7 +769,9 @@ window.sendToWhatsApp = async () => {
   cart.forEach(item => {
     msg += `▸ ${item.code} | ${item.name}\n  ${formatPrice(item.price)}\n`;
   });
-  msg += `───────────────\n*TOTAL: ${formatPrice(total)}*\n`;
+  msg += `───────────────\n`;
+  if (desconto > 0) msg += `Subtotal: ${formatPrice(subtotal)}\nDesconto PIX (5%): - ${formatPrice(desconto)}\n`;
+  msg += `*TOTAL: ${formatPrice(total)}*\n`;
   msg += `*Pagamento:* ${payLabel}\n`;
   if (selectedPayment === 'dinheiro' && trocoVal) msg += `*Troco para:* ${trocoVal}\n`;
   if (isGift && giftMsg) msg += `\n*Mensagem presente:* "${giftMsg}"\n`;
