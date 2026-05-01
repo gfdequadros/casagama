@@ -601,8 +601,8 @@ function renderCart() {
   }
 
   const subtotal  = cart.reduce((a,b) => a + b.price, 0);
-  const isPix     = selectedPayment === 'pix';
-  const desconto  = isPix ? subtotal * 0.05 : 0;
+  const isPix     = selectedPayment === 'pix' || selectedPayment === 'dinheiro';
+  const desconto  = (isPix || selectedPayment === 'dinheiro') ? subtotal * 0.05 : 0;
   const totalFinal= subtotal - desconto;
 
   btn.disabled = false;
@@ -616,7 +616,7 @@ function renderCart() {
       <button class="cart-item-remove" onclick="window._removeItem('${item.code}')">×</button>
     </div>`).join('') +
     (isPix ? `<div style="margin-top:12px;padding:10px 12px;background:#e8f5e9;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:10px;letter-spacing:1px;color:#2e7d32;text-transform:uppercase;">Desconto PIX 5%</span>
+      <span style="font-size:10px;letter-spacing:1px;color:#2e7d32;text-transform:uppercase;">Desconto 5%</span>
       <span style="font-family:'Cormorant Garamond',serif;font-size:15px;color:#2e7d32;">- ${formatPrice(desconto)}</span>
     </div>` : '');
 
@@ -759,7 +759,7 @@ window.sendToWhatsApp = async () => {
 
   const payLabel  = PAYMENT_METHODS.find(m => m.id === selectedPayment)?.name || selectedPayment || 'Não informado';
   const subtotal  = cart.reduce((a, b) => a + b.price, 0);
-  const desconto  = selectedPayment === 'pix' ? subtotal * 0.05 : 0;
+  const desconto  = (selectedPayment === 'pix' || selectedPayment === 'dinheiro') ? subtotal * 0.05 : 0;
   const total     = subtotal - desconto;
 
   let msg = `*Olá, CASA GAMA!* 🌿\n\n`;
@@ -774,6 +774,7 @@ window.sendToWhatsApp = async () => {
   msg += `*TOTAL: ${formatPrice(total)}*\n`;
   msg += `*Pagamento:* ${payLabel}\n`;
   if (selectedPayment === 'pix') msg += `*Chave PIX:* 56.428.577/0001-53 (CNPJ)\n`;
+  if (selectedPayment === 'dinheiro') msg += `*(5% de desconto aplicado no pagamento em dinheiro)*\n`;
   if (selectedPayment === 'dinheiro' && trocoVal) msg += `*Troco para:* ${trocoVal}\n`;
   if (isGift && giftMsg) msg += `\n*Mensagem presente:* "${giftMsg}"\n`;
   if (obs) msg += `\n*Observações:* ${obs}\n`;
