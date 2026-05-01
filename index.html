@@ -730,7 +730,7 @@ window.openCustomerModal = () => { if (cart.length) document.getElementById('mod
 window.closeModal        = () => { document.getElementById('modalOverlay').classList.remove('open'); };
 
 // WhatsApp FAB
-window.openWaFab = () => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, '_blank');
+window.openWaFab = () => { window.location.href = `https://wa.me/${WHATSAPP_NUMBER}`; };
 
 // ----------------------------------------------------------
 // 8. FINALIZAR PEDIDO — gera mensagem e abre WhatsApp
@@ -764,7 +764,7 @@ window.sendToWhatsApp = async () => {
   // Baixa estoque no Firestore
   try { await baixarEstoque(); } catch(e) { console.warn("Erro ao baixar estoque:", e); }
 
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+  window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
 
 
   // Reseta estado
